@@ -1,0 +1,9 @@
+[package]
+name = "toy-renderer"
+version = "0.1.0"
+authors = ["Deepankar Agrawal <deepankar11093@gmail.com>"]
+edition = "2018"
+
+
+[dependencies]
+image = { version = "0.23.5", default-features = false, features = ["bmp"] }
