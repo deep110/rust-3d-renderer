@@ -2,24 +2,37 @@
 extern crate test;
 use test::Bencher;
 
-extern crate image;
-
 use image::{imageops, ImageBuffer, RgbImage};
+use obj::Obj;
 
 fn main() {
+    let mut head = Obj::load("assets/african_head.obj").unwrap().data;
+
     let mut img: RgbImage = ImageBuffer::new(256, 256);
 
     let red = image::Rgb([255, 0, 0]);
     let white = image::Rgb([255, 255, 255]);
-    let green = image::Rgb([0, 255, 0]);
 
-    draw_line(13, 20, 100, 60, &mut img, &red);
-    draw_line(20, 13, 40, 80, &mut img, &white);
-    draw_line(80, 40, 13, 20, &mut img, &green);
+    // 2492 faces | 1258 vertices
+    for obj in head.objects {
+        for g in obj.groups.iter() {
+            draw_object_wireframe(&head.position, &g.polys, &mut img, &white);
+        }
+    }
 
     // flip vertically to make origin at bottom left
     imageops::flip_vertical_in_place(&mut img);
     img.save("output.bmp").unwrap();
+}
+
+fn draw_object_wireframe(
+    vertices: &Vec<[f32; 3]>,
+    faces: &Vec<obj::SimplePolygon>,
+    image: &mut RgbImage,
+    color: &image::Rgb<u8>,
+) {
+    println!("num faces {}", faces.len());
+    println!("vertices {}", vertices.len());
 }
 
 fn draw_line(

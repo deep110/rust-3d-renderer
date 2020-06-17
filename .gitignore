@@ -15,4 +15,6 @@ Cargo.lock
 # Coverage reports
 *.html
 
+# Project Specific
 output.bmp
+assets/
