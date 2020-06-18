@@ -5,15 +5,15 @@ use test::Bencher;
 use image::{imageops, ImageBuffer, RgbImage};
 use obj::Obj;
 
+static WIDTH: u32 = 511;
+static HEIGHT: u32 = 511;
+
 fn main() {
-    let mut head = Obj::load("assets/african_head.obj").unwrap().data;
+    let head = Obj::load("assets/african_head.obj").unwrap().data;
 
-    let mut img: RgbImage = ImageBuffer::new(256, 256);
-
-    let red = image::Rgb([255, 0, 0]);
+    let mut img: RgbImage = ImageBuffer::new(WIDTH+1, HEIGHT+1);
     let white = image::Rgb([255, 255, 255]);
 
-    // 2492 faces | 1258 vertices
     for obj in head.objects {
         for g in obj.groups.iter() {
             draw_object_wireframe(&head.position, &g.polys, &mut img, &white);
@@ -22,7 +22,7 @@ fn main() {
 
     // flip vertically to make origin at bottom left
     imageops::flip_vertical_in_place(&mut img);
-    img.save("output.bmp").unwrap();
+    img.save("african_head.bmp").unwrap();
 }
 
 fn draw_object_wireframe(
@@ -31,8 +31,19 @@ fn draw_object_wireframe(
     image: &mut RgbImage,
     color: &image::Rgb<u8>,
 ) {
-    println!("num faces {}", faces.len());
-    println!("vertices {}", vertices.len());
+    for face in faces {
+        for i in 0..2 {
+            let v0 = vertices[face.0[i].0];
+            let v1 = vertices[face.0[(i + 1) % 3].0];
+
+            let x0 = (v0[0] + 1f32) * WIDTH as f32 / 2.;
+            let y0 = (v0[1] + 1f32) * HEIGHT as f32 / 2.;
+            let x1 = (v1[0] + 1f32) * WIDTH as f32 / 2.;
+            let y1 = (v1[1] + 1f32) * HEIGHT as f32 / 2.;
+
+            draw_line(x0 as i32, y0 as i32, x1 as i32, y1 as i32, image, color);
+        }
+    }
 }
 
 fn draw_line(

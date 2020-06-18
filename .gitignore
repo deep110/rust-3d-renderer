@@ -16,5 +16,5 @@ Cargo.lock
 *.html
 
 # Project Specific
-output.bmp
+*.bmp
 assets/
