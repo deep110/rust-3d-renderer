@@ -1,5 +1,8 @@
-use image::{ImageBuffer, RgbImage};
 use crate::wavefront::SimplePolygon;
+#[allow(unused_imports)]
+use image::{ImageBuffer, RgbImage};
+
+#[allow(unused_imports)]
 use test::Bencher;
 
 pub fn draw_object_wireframe(

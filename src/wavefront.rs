@@ -373,7 +373,6 @@ pub struct IndexTuple(pub usize, pub Option<usize>, pub Option<usize>);
 #[derive(Debug, Clone, Hash, PartialEq)]
 pub struct SimplePolygon(pub Vec<IndexTuple>);
 
-
 impl std::fmt::Display for IndexTuple {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0 + 1)?;
@@ -386,7 +385,6 @@ impl std::fmt::Display for IndexTuple {
         Ok(())
     }
 }
-
 
 /// Errors parsing or loading a .obj file.
 #[derive(Debug)]
@@ -895,4 +893,76 @@ impl ObjData {
         dat.objects.push(object);
         Ok(dat)
     }
+
+    pub fn normalize_vertices(&mut self) {
+        let vertices = &mut self.position;
+        let values = min_max_vertices(&vertices);
+
+        // check if already normalized
+        let mut is_valid = true;
+        for i in values.iter() {
+            if *i <= 1. && *i >= -1. {
+                is_valid = is_valid & true;
+            } else {
+                is_valid = false;
+                break;
+            }
+        }
+        if is_valid {
+            return;
+        }
+
+        let translation = [
+            -(values[0] + (values[1] - values[0]) / 2.),
+            -(values[2] + (values[3] - values[2]) / 2.),
+            -(values[4] + (values[5] - values[4]) / 2.),
+        ];
+
+        let scale = [
+            1. / ((values[1] - values[0]) / 2.),
+            1. / ((values[3] - values[2]) / 2.),
+            1. / ((values[5] - values[4]) / 2.),
+        ];
+        let scale_by = scale
+            .iter()
+            .min_by(|i, j| i.partial_cmp(j).unwrap())
+            .unwrap();
+
+        for vertex in vertices.iter_mut() {
+            vertex[0] = (vertex[0] + translation[0]) * scale_by;
+            vertex[1] = (vertex[1] + translation[1]) * scale_by;
+            vertex[2] = (vertex[2] + translation[2]) * scale_by;
+        }
+    }
+}
+
+fn min_max_vertices(vertices: &Vec<[f32; 3]>) -> [f32; 6] {
+    let mut x_min = 0f32;
+    let mut x_max = 0f32;
+    let mut y_min = 0f32;
+    let mut y_max = 0f32;
+    let mut z_min = 0f32;
+    let mut z_max = 0f32;
+    for vertex in vertices {
+        let x = vertex[0];
+        let y = vertex[1];
+        let z = vertex[2];
+        if x > x_max {
+            x_max = x;
+        } else if x < x_min {
+            x_min = x;
+        }
+        if y > y_max {
+            y_max = y;
+        } else if y < y_min {
+            y_min = y;
+        }
+        if z > z_max {
+            z_max = z;
+        } else if z < z_min {
+            z_min = z;
+        }
+    }
+
+    return [x_min, x_max, y_min, y_max, z_min, z_max];
 }
