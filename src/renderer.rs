@@ -1,4 +1,5 @@
 use crate::utils;
+use crate::wavefront::SimplePolygon;
 use cgmath::{Vector2, Vector3};
 
 #[allow(unused_imports)]
@@ -87,4 +88,24 @@ fn bench_render_traingle(b: &mut Bencher) {
     ];
 
     b.iter(|| render_triangle(&pts, &mut frame, &red));
+}
+
+pub fn render_mesh(vertices: &Vec<Vector3<f32>>, faces: &Vec<SimplePolygon>, frame: &mut [u8]) {
+    let width: f32 = (crate::WIDTH - 1) as f32;
+    let height: f32 = (crate::HEIGHT - 1) as f32;
+
+    // each face is a triangle
+    for face in faces {
+        // coordinates of face triangles in screen coordinates
+        let mut screen_coordinates: Vec<Vector2<isize>> = Vec::new();
+        for i in 0..3 {
+            // world coordinate of triangle vertex
+            let tr_wc = vertices[face[i].0];
+            screen_coordinates.push(Vector2::new(
+                ((tr_wc.x + 1.) * width / 2.) as isize,
+                ((tr_wc.y + 1.) * height / 2.) as isize,
+            ));
+        }
+        render_triangle(&screen_coordinates, frame, &utils::get_random_color());
+    }
 }
