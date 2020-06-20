@@ -372,8 +372,7 @@ pub struct IndexTuple(pub usize, pub Option<usize>, pub Option<usize>);
 ///
 /// Each vertex has an associated tuple of `(position, texture, normal)`
 /// indices.
-#[derive(Debug, Clone, Hash, PartialEq)]
-pub struct SimplePolygon(pub Vec<IndexTuple>);
+pub type SimplePolygon = Vec<IndexTuple>;
 
 impl std::fmt::Display for IndexTuple {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -775,7 +774,7 @@ impl ObjData {
             let ituple = self.parse_group(line_number, g)?;
             ret.push(ituple);
         }
-        Ok(SimplePolygon(ret))
+        Ok(ret)
     }
 
     pub fn load_buf<R: Read>(input: R) -> Result<Self, ObjError> {

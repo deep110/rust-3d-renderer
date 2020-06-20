@@ -16,8 +16,8 @@ pub fn draw_object_wireframe(
 
     for face in faces {
         for i in 0..2 {
-            let v0 = vertices[face.0[i].0];
-            let v1 = vertices[face.0[(i + 1) % 3].0];
+            let v0 = vertices[face[i].0];
+            let v1 = vertices[face[(i + 1) % 3].0];
 
             let x0 = (v0.x + 1f32) * width / 2.;
             let y0 = (v0.y + 1f32) * height / 2.;
