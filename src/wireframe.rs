@@ -1,3 +1,4 @@
+use cgmath::Vector3;
 use crate::wavefront::SimplePolygon;
 
 use crate::utils;
@@ -5,7 +6,7 @@ use crate::utils;
 use test::Bencher;
 
 pub fn draw_object_wireframe(
-    vertices: &Vec<[f32; 3]>,
+    vertices: &Vec<Vector3<f32>>,
     faces: &Vec<SimplePolygon>,
     frame: &mut [u8],
     color: &[u8],
@@ -18,10 +19,10 @@ pub fn draw_object_wireframe(
             let v0 = vertices[face.0[i].0];
             let v1 = vertices[face.0[(i + 1) % 3].0];
 
-            let x0 = (v0[0] + 1f32) * width / 2.;
-            let y0 = (v0[1] + 1f32) * height / 2.;
-            let x1 = (v1[0] + 1f32) * width / 2.;
-            let y1 = (v1[1] + 1f32) * height / 2.;
+            let x0 = (v0.x + 1f32) * width / 2.;
+            let y0 = (v0.y + 1f32) * height / 2.;
+            let x1 = (v1.x + 1f32) * width / 2.;
+            let y1 = (v1.y + 1f32) * height / 2.;
 
             draw_line(x0 as i32, y0 as i32, x1 as i32, y1 as i32, frame, color);
         }

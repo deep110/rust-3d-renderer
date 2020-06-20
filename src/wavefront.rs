@@ -11,6 +11,8 @@ use std::{
     sync::Arc,
 };
 
+use cgmath::{Vector2, Vector3};
+
 const DEFAULT_OBJECT: &str = "default";
 const DEFAULT_GROUP: &str = "default";
 
@@ -543,11 +545,11 @@ impl Group {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ObjData {
     /// Vertex positions.
-    pub position: Vec<[f32; 3]>,
+    pub position: Vec<Vector3<f32>>,
     /// 2D texture coordinates.
-    pub texture: Vec<[f32; 2]>,
+    pub texture: Vec<Vector2<f32>>,
     /// A set of normals.
-    pub normal: Vec<[f32; 3]>,
+    pub normal: Vec<Vector3<f32>>,
     /// A collection of associated objects indicated by `o`, as well as the
     /// default object at the top level.
     pub objects: Vec<Object>,
@@ -678,7 +680,7 @@ impl ObjData {
         line_number: usize,
         n0: Option<&str>,
         n1: Option<&str>,
-    ) -> Result<[f32; 2], ObjError> {
+    ) -> Result<Vector2<f32>, ObjError> {
         let (n0, n1) = match (n0, n1) {
             (Some(n0), Some(n1)) => (n0, n1),
             _ => {
@@ -689,7 +691,7 @@ impl ObjData {
             }
         };
         let normal = match (FromStr::from_str(n0), FromStr::from_str(n1)) {
-            (Ok(n0), Ok(n1)) => [n0, n1],
+            (Ok(n0), Ok(n1)) => Vector2::new(n0, n1),
             _ => {
                 return Err(ObjError::ArgumentListFailure {
                     line_number,
@@ -705,7 +707,7 @@ impl ObjData {
         n0: Option<&str>,
         n1: Option<&str>,
         n2: Option<&str>,
-    ) -> Result<[f32; 3], ObjError> {
+    ) -> Result<Vector3<f32>, ObjError> {
         let (n0, n1, n2) = match (n0, n1, n2) {
             (Some(n0), Some(n1), Some(n2)) => (n0, n1, n2),
             _ => {
@@ -720,7 +722,7 @@ impl ObjData {
             FromStr::from_str(n1),
             FromStr::from_str(n2),
         ) {
-            (Ok(n0), Ok(n1), Ok(n2)) => [n0, n1, n2],
+            (Ok(n0), Ok(n1), Ok(n2)) => Vector3::new(n0, n1, n2),
             _ => {
                 return Err(ObjError::ArgumentListFailure {
                     line_number,
@@ -936,7 +938,7 @@ impl ObjData {
     }
 }
 
-fn min_max_vertices(vertices: &Vec<[f32; 3]>) -> [f32; 6] {
+fn min_max_vertices(vertices: &Vec<Vector3<f32>>) -> [f32; 6] {
     let mut x_min = 0f32;
     let mut x_max = 0f32;
     let mut y_min = 0f32;
@@ -944,9 +946,9 @@ fn min_max_vertices(vertices: &Vec<[f32; 3]>) -> [f32; 6] {
     let mut z_min = 0f32;
     let mut z_max = 0f32;
     for vertex in vertices {
-        let x = vertex[0];
-        let y = vertex[1];
-        let z = vertex[2];
+        let x = vertex.x;
+        let y = vertex.y;
+        let z = vertex.z;
         if x > x_max {
             x_max = x;
         } else if x < x_min {
