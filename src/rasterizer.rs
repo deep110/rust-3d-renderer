@@ -6,8 +6,8 @@ use cgmath::{Vector2, Vector3};
 #[allow(unused_imports)]
 use test::Bencher;
 
-const _WIDTH_F: f32 = (crate::WIDTH) as f32;
-const _HEIGHT_F: f32 = (crate::HEIGHT) as f32;
+const _WIDTH_F: f32 = (crate::WIDTH - 1) as f32;
+const _HEIGHT_F: f32 = (crate::HEIGHT - 1) as f32;
 
 /// Barycentric coordinates of a point are represented from points of triangle
 /// itself For example: Given triangle with A, B, C, we can have a point P in
@@ -55,7 +55,7 @@ fn barycentric_coordinates(vertices: &[Vector3<f32>], point: &Vector3<f32>) -> V
 
 fn render_triangle(vertices: &[Vector3<f32>], frame: &mut [u8], zbuffer: &mut [f32], color: &[u8]) {
     let mut bboxmin: Vector2<f32> = Vector2::new(f32::MAX, f32::MAX);
-    let mut bboxmax: Vector2<f32> = Vector2::new(f32::MIN, f32::MIN);
+    let mut bboxmax: Vector2<f32> = Vector2::new(0., 0.);
     let clamp: Vector2<f32> = Vector2::new(_WIDTH_F, _HEIGHT_F);
     for i in 0..3 {
         for j in 0..2 {
@@ -65,8 +65,8 @@ fn render_triangle(vertices: &[Vector3<f32>], frame: &mut [u8], zbuffer: &mut [f
     }
 
     let mut point: Vector3<f32> = Vector3::new(0., 0., 0.);
-    for i in bboxmin.x as i32..bboxmax.x as i32 {
-        for j in bboxmin.y as i32..bboxmax.y as i32 {
+    for i in bboxmin.x as i32..bboxmax.x as i32 + 1 {
+        for j in bboxmin.y as i32..bboxmax.y as i32 + 1 {
             utils::update_vector2(&mut point, i, j);
             let bc_screen = barycentric_coordinates(vertices, &point);
             if bc_screen.x < 0. || bc_screen.y < 0. || bc_screen.z < 0. {
@@ -103,8 +103,8 @@ fn bench_render_traingle(b: &mut Bencher) {
 
 fn world_to_screen(world_c: &Vector3<f32>) -> Vector3<f32> {
     Vector3::new(
-        (world_c.x + 1.) * _WIDTH_F / 2. + 0.5,
-        (world_c.y + 1.) * _HEIGHT_F / 2. + 0.5,
+        (world_c.x + 1.) * _WIDTH_F / 2.,
+        (world_c.y + 1.) * _HEIGHT_F / 2.,
         world_c.z,
     )
 }
