@@ -7,6 +7,7 @@ mod utils;
 pub mod wavefront;
 pub mod wireframe;
 
+use cgmath::Vector3;
 use pixels::{wgpu::Surface, Pixels, SurfaceTexture};
 use std::env;
 use wavefront::Obj;
@@ -19,6 +20,7 @@ use winit::window::WindowBuilder;
 const WIDTH: u32 = 512;
 const HEIGHT: u32 = 512;
 const BLACK: [u8; 4] = [0, 0, 0, 255];
+const LIGHT_DIR: Vector3<f32> = Vector3::new(0., 0., 1.);
 
 fn main() {
     let args: Vec<String> = env::args().collect();

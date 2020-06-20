@@ -1,5 +1,6 @@
 use crate::utils;
 use crate::wavefront::SimplePolygon;
+use cgmath::prelude::*;
 use cgmath::{Vector2, Vector3};
 
 #[allow(unused_imports)]
@@ -97,7 +98,8 @@ pub fn render_mesh(vertices: &Vec<Vector3<f32>>, faces: &Vec<SimplePolygon>, fra
     // each face is a triangle
     for face in faces {
         // coordinates of face triangles in screen coordinates
-        let mut screen_coordinates: Vec<Vector2<isize>> = Vec::new();
+        let mut world_coordinates: Vec<Vector3<f32>> = Vec::with_capacity(3);
+        let mut screen_coordinates: Vec<Vector2<isize>> = Vec::with_capacity(3);
         for i in 0..3 {
             // world coordinate of triangle vertex
             let tr_wc = vertices[face[i].0];
@@ -105,7 +107,23 @@ pub fn render_mesh(vertices: &Vec<Vector3<f32>>, faces: &Vec<SimplePolygon>, fra
                 ((tr_wc.x + 1.) * width / 2.) as isize,
                 ((tr_wc.y + 1.) * height / 2.) as isize,
             ));
+            world_coordinates.push(tr_wc);
         }
-        render_triangle(&screen_coordinates, frame, &utils::get_random_color());
+        // get normal vector to triangle and take dot product with light direction
+        // to get intensity. Ignoring gamma correction
+        let mut normal = Vector3::cross(
+            world_coordinates[1] - world_coordinates[0],
+            world_coordinates[2] - world_coordinates[0],
+        );
+        normal = normal.normalize();
+
+        let intensity = (normal.dot(crate::LIGHT_DIR) * 255.) as u8;
+        if intensity > 0 {
+            render_triangle(
+                &screen_coordinates,
+                frame,
+                &[intensity, intensity, intensity, 255],
+            );
+        }
     }
 }
