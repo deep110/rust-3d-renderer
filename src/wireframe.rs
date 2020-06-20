@@ -1,5 +1,5 @@
-use cgmath::Vector3;
 use crate::wavefront::SimplePolygon;
+use cgmath::Vector3;
 
 use crate::utils;
 #[allow(unused_imports)]
@@ -29,7 +29,14 @@ pub fn draw_object_wireframe(
     }
 }
 
-pub fn draw_line(mut x1: i32, mut y1: i32, mut x2: i32, mut y2: i32, frame: &mut [u8], color: &[u8]) {
+pub fn draw_line(
+    mut x1: i32,
+    mut y1: i32,
+    mut x2: i32,
+    mut y2: i32,
+    frame: &mut [u8],
+    color: &[u8],
+) {
     let mut steep = false;
     if ((x1 - x2) as i32).abs() < ((y1 - y2) as i32).abs() {
         std::mem::swap(&mut x1, &mut y1);
@@ -61,7 +68,7 @@ pub fn draw_line(mut x1: i32, mut y1: i32, mut x2: i32, mut y2: i32, frame: &mut
 
 #[bench]
 fn bench_draw_line(b: &mut Bencher) {
-    let mut frame: [u8; 100] = [0; 100];
+    let mut frame = [0; crate::WIDTH as usize * crate::HEIGHT as usize * 4];
     let red = [255, 0, 0, 255];
 
     b.iter(|| draw_line(10, 10, 0, 0, &mut frame, &red));

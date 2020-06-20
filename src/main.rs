@@ -2,7 +2,9 @@
 extern crate test;
 
 mod utils;
+#[allow(dead_code)]
 mod wireframe;
+mod renderer;
 
 #[allow(dead_code)]
 mod wavefront;
@@ -14,6 +16,8 @@ use winit::dpi::LogicalSize;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::WindowBuilder;
+
+use cgmath::Vector2;
 
 // global variables
 const WIDTH: u32 = 512;
@@ -73,7 +77,10 @@ fn main() {
                 utils::clear(pixels.get_frame(), &BLACK);
 
                 // redraw
-                draw(&mesh, pixels.get_frame());
+                // draw_mesh(&mesh, pixels.get_frame(), &WHITE);
+                let pts = [Vector2::new(10, 10), Vector2::new(100, 30), Vector2::new(190, 160)];
+                renderer::render_triangle(&pts, pixels.get_frame(), &WHITE);
+
                 if pixels
                     .render()
                     .map_err(|e| println!("pixels.render() failed: {}", e))
@@ -96,10 +103,10 @@ fn init(obj_path: &str) -> wavefront::ObjData {
     return mesh;
 }
 
-fn draw(mesh: &wavefront::ObjData, frame: &mut [u8]) {
+fn draw_mesh(mesh: &wavefront::ObjData, frame: &mut [u8], color: &[u8]) {
     for obj in &mesh.objects {
         for g in obj.groups.iter() {
-            wireframe::draw_object_wireframe(&mesh.position, &g.polys, frame, &WHITE);
+            wireframe::draw_object_wireframe(&mesh.position, &g.polys, frame, color);
         }
     }
 }
