@@ -54,11 +54,11 @@ fn barycentric_coordinates(
     );
 }
 
-pub fn render_triangle(vertices: &[Vector2<isize>], frame: &mut [u8], color: &[u8]) {
-    let mut bboxmin: Vector2<isize> =
+fn render_triangle(vertices: &[Vector2<isize>], frame: &mut [u8], color: &[u8]) {
+    let mut bboxmin: Vector2<isize> = Vector2::new(isize::MAX, isize::MAX);
+    let mut bboxmax: Vector2<isize> = Vector2::new(isize::MIN, isize::MIN);
+    let clamp: Vector2<isize> =
         Vector2::new((crate::WIDTH - 1) as isize, (crate::HEIGHT - 1) as isize);
-    let mut bboxmax: Vector2<isize> = Vector2::new(0, 0);
-    let clamp: Vector2<isize> = Vector2::new(bboxmin.x, bboxmin.y);
     for i in 0..3 {
         for j in 0..2 {
             bboxmin[j] = isize::max(0, isize::min(bboxmin[j], vertices[i][j]));
@@ -72,6 +72,7 @@ pub fn render_triangle(vertices: &[Vector2<isize>], frame: &mut [u8], color: &[u
             if bc_screen.x < 0. || bc_screen.y < 0. || bc_screen.z < 0. {
                 continue;
             };
+            // let k = 0;
             utils::set_pixel(i as usize, j as usize, frame, color);
         }
     }
@@ -91,7 +92,14 @@ fn bench_render_traingle(b: &mut Bencher) {
     b.iter(|| render_triangle(&pts, &mut frame, &red));
 }
 
-pub fn render_mesh(vertices: &Vec<Vector3<f32>>, faces: &Vec<SimplePolygon>, frame: &mut [u8]) {
+fn world_to_screen(world_c: &Vector3<f32>, width: &f32, height: &f32) -> Vector2<isize> {
+    Vector2::new(
+        ((world_c.x + 1.) * width / 2.) as isize,
+        ((world_c.y + 1.) * height / 2.) as isize,
+    )
+}
+
+pub fn rasterize_mesh(vertices: &Vec<Vector3<f32>>, faces: &Vec<SimplePolygon>, frame: &mut [u8]) {
     let width: f32 = (crate::WIDTH - 1) as f32;
     let height: f32 = (crate::HEIGHT - 1) as f32;
 
@@ -103,10 +111,7 @@ pub fn render_mesh(vertices: &Vec<Vector3<f32>>, faces: &Vec<SimplePolygon>, fra
         for i in 0..3 {
             // world coordinate of triangle vertex
             let tr_wc = vertices[face[i].0];
-            screen_coordinates.push(Vector2::new(
-                ((tr_wc.x + 1.) * width / 2.) as isize,
-                ((tr_wc.y + 1.) * height / 2.) as isize,
-            ));
+            screen_coordinates.push(world_to_screen(&tr_wc, &width, &height));
             world_coordinates.push(tr_wc);
         }
         // get normal vector to triangle and take dot product with light direction

@@ -1,7 +1,7 @@
 #![feature(test)]
 extern crate test;
 
-mod renderer;
+mod rasterizer;
 mod utils;
 
 pub mod wavefront;
@@ -74,7 +74,7 @@ fn main() {
                 utils::clear(pixels.get_frame(), &BLACK);
 
                 // redraw
-                draw_mesh(&mesh, pixels.get_frame());
+                rasterize_objects(&mesh, pixels.get_frame());
 
                 if pixels
                     .render()
@@ -98,10 +98,10 @@ fn init(obj_path: &str) -> wavefront::ObjData {
     return mesh;
 }
 
-fn draw_mesh(mesh: &wavefront::ObjData, frame: &mut [u8]) {
+fn rasterize_objects(mesh: &wavefront::ObjData, frame: &mut [u8]) {
     for obj in &mesh.objects {
         for g in obj.groups.iter() {
-            renderer::render_mesh(&mesh.position, &g.polys, frame);
+            rasterizer::rasterize_mesh(&mesh.position, &g.polys, frame);
         }
     }
 }
