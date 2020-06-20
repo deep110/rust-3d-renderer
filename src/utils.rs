@@ -1,3 +1,5 @@
+use cgmath::Vector3;
+
 const _WIDTH_C: usize = crate::WIDTH as usize;
 const _HEIGHT_C: usize = crate::HEIGHT as usize - 1;
 
@@ -12,4 +14,9 @@ pub fn clear(frame: &mut [u8], color: &[u8]) {
     for pixel in frame.chunks_exact_mut(4) {
         pixel.copy_from_slice(color);
     }
+}
+
+pub fn update_vector2(v: &mut Vector3<f32>, x: i32, y: i32) {
+    v.x = x as f32;
+    v.y = y as f32;
 }

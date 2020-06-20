@@ -47,6 +47,8 @@ fn main() {
         Pixels::new(WIDTH, HEIGHT, surface_texture).unwrap()
     };
 
+    let mut zbuffer = [f32::MIN; (WIDTH * HEIGHT) as usize];
+
     let mesh = init(&args[1]);
 
     event_loop.run(move |event, _, control_flow| {
@@ -74,7 +76,7 @@ fn main() {
                 utils::clear(pixels.get_frame(), &BLACK);
 
                 // redraw
-                rasterize_objects(&mesh, pixels.get_frame());
+                rasterize_scene(&mesh, pixels.get_frame(), &mut zbuffer);
 
                 if pixels
                     .render()
@@ -98,10 +100,15 @@ fn init(obj_path: &str) -> wavefront::ObjData {
     return mesh;
 }
 
-fn rasterize_objects(mesh: &wavefront::ObjData, frame: &mut [u8]) {
+// right now scene is just one obj mesh
+fn rasterize_scene(mesh: &wavefront::ObjData, frame_buffer: &mut [u8], zbuffer: &mut [f32]) {
+    // clear z buffer
+    for i in 0..(WIDTH * HEIGHT) as usize {
+        zbuffer[i] = f32::MIN;
+    }
     for obj in &mesh.objects {
         for g in obj.groups.iter() {
-            rasterizer::rasterize_mesh(&mesh.position, &g.polys, frame);
+            rasterizer::rasterize_mesh(&mesh.position, &g.polys, frame_buffer, zbuffer);
         }
     }
 }
