@@ -10,8 +10,8 @@ pub fn draw_object_wireframe(
     frame: &mut [u8],
     color: &[u8],
 ) {
-    let width: f32 = (super::WIDTH - 1) as f32;
-    let height: f32 = (super::HEIGHT - 1) as f32;
+    let width: f32 = (crate::WIDTH - 1) as f32;
+    let height: f32 = (crate::HEIGHT - 1) as f32;
 
     for face in faces {
         for i in 0..2 {
@@ -28,7 +28,7 @@ pub fn draw_object_wireframe(
     }
 }
 
-fn draw_line(mut x1: i32, mut y1: i32, mut x2: i32, mut y2: i32, frame: &mut [u8], color: &[u8]) {
+pub fn draw_line(mut x1: i32, mut y1: i32, mut x2: i32, mut y2: i32, frame: &mut [u8], color: &[u8]) {
     let mut steep = false;
     if ((x1 - x2) as i32).abs() < ((y1 - y2) as i32).abs() {
         std::mem::swap(&mut x1, &mut y1);

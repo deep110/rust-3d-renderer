@@ -19,6 +19,7 @@ use winit::window::WindowBuilder;
 const WIDTH: u32 = 512;
 const HEIGHT: u32 = 512;
 const WHITE: [u8; 4] = [255, 255, 255, 255];
+const BLACK: [u8; 4] = [0, 0, 0, 255];
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -68,6 +69,10 @@ fn main() {
             }
 
             Event::RedrawRequested(_) => {
+                // clear the frame buffer
+                utils::clear(pixels.get_frame(), &BLACK);
+
+                // redraw
                 draw(&mesh, pixels.get_frame());
                 if pixels
                     .render()
