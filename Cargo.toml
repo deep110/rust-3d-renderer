@@ -1,5 +1,5 @@
 [package]
-name = "toy-renderer"
+name = "toy_renderer"
 version = "0.1.0"
 authors = ["Deepankar Agrawal <deepankar11093@gmail.com>"]
 edition = "2018"

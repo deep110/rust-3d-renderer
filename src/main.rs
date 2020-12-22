@@ -1,12 +1,4 @@
-#![feature(test)]
-extern crate test;
-
-mod mesh;
-mod utils;
-mod wireframe;
-
 use cgmath::Vector3;
-use mesh::MeshLoader;
 use pixels::{wgpu::Surface, Pixels, SurfaceTexture};
 use std::env;
 use winit::dpi::LogicalSize;
@@ -14,11 +6,11 @@ use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::WindowBuilder;
 
+use toy_renderer::Config;
+
 // global variables
 const WIDTH: u32 = 512;
 const HEIGHT: u32 = 512;
-const BLACK: [u8; 4] = [0, 0, 0, 255];
-const WHITE: [u8; 4] = [255, 255, 255, 255];
 const LIGHT_DIR: Vector3<f32> = Vector3::new(0., 0., 1.);
 
 fn main() {
@@ -46,9 +38,16 @@ fn main() {
         Pixels::new(WIDTH, HEIGHT, surface_texture).unwrap()
     };
 
-    let mut zbuffer = [f32::MIN; (WIDTH * HEIGHT) as usize];
+    let file_path = Box::leak(args[1].clone().into_boxed_str());
+    let config = Config {
+        width: WIDTH,
+        height: HEIGHT,
+        mesh_path: file_path,
+        is_wireframe: true,
+        light_direction: LIGHT_DIR,
+    };
 
-    let mesh = init(&args[1]);
+    let mut rcontext = toy_renderer::init(config);
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
@@ -71,11 +70,8 @@ fn main() {
             }
 
             Event::RedrawRequested(_) => {
-                // clear the frame buffer
-                utils::clear(pixels.get_frame(), &BLACK);
-
                 // redraw
-                rasterize_scene(&mesh, pixels.get_frame(), &mut zbuffer);
+                toy_renderer::render_scene(&mut rcontext, pixels.get_frame());
 
                 if pixels
                     .render()
@@ -90,25 +86,4 @@ fn main() {
             _ => (),
         }
     });
-}
-
-fn init(obj_path: &str) -> mesh::MeshData {
-    let mut mesh = MeshLoader::load(obj_path).unwrap().data;
-    mesh.normalize_vertices();
-
-    return mesh;
-}
-
-// right now scene is just one obj mesh
-fn rasterize_scene(mesh: &mesh::MeshData, frame_buffer: &mut [u8], zbuffer: &mut [f32]) {
-    // clear z buffer
-    for i in 0..(WIDTH * HEIGHT) as usize {
-        zbuffer[i] = f32::MIN;
-    }
-    for obj in &mesh.objects {
-        for g in obj.groups.iter() {
-            // rasterizer::rasterize_mesh(&mesh.position, &g.polys, frame_buffer, zbuffer);
-            wireframe::draw_object_wireframe(&mesh.position, &g.polys, frame_buffer, &WHITE);
-        }
-    }
 }

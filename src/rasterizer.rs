@@ -115,6 +115,7 @@ pub fn rasterize_mesh(
     faces: &Vec<SimplePolygon>,
     frame: &mut [u8],
     zbuffer: &mut [f32],
+    light_dir: Vector3<f32>,
 ) {
     // each face is a triangle
     for face in faces {
@@ -136,20 +137,14 @@ pub fn rasterize_mesh(
         normal = normal.normalize();
 
         // use intensity as it is. Ignoring gamma correction
-        let intensity = (normal.dot(crate::LIGHT_DIR) * 255.) as u8;
-        // if intensity > 0 {
-        //     render_triangle(
-        //         &screen_coordinates,
-        //         frame,
-        //         zbuffer,
-        //         &[intensity, intensity, intensity, 255],
-        //     );
-        // }
-        render_triangle(
-            &screen_coordinates,
-            frame,
-            zbuffer,
-            &[intensity, intensity, intensity, 255],
-        );
+        let intensity = (normal.dot(light_dir) * 255.) as u8;
+        if intensity > 0 {
+            render_triangle(
+                &screen_coordinates,
+                frame,
+                zbuffer,
+                &[intensity, intensity, intensity, 255],
+            );
+        }
     }
 }

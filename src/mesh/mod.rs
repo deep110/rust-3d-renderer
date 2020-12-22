@@ -208,16 +208,15 @@ impl MeshLoader {
     /// Load an file from the given path with the default load
     /// configuration.
     pub fn load(path: impl AsRef<Path>) -> Result<MeshLoader, ObjError> {
-        println!("{:?}", path.as_ref());
         let f = File::open(path.as_ref())?;
 
-        // unwrap is safe since we've read this file before.
-        let path = path.as_ref().parent().unwrap().to_owned();
-
-        let data = match path.extension().and_then(OsStr::to_str) {
+        let data = match path.as_ref().extension().and_then(OsStr::to_str) {
             Some("obj") => ObjData::parse_mesh_data(&f)?,
             _ => return Err(ObjError::Unsupported),
         };
+
+        // unwrap is safe since we've read this file before.
+        let path = path.as_ref().parent().unwrap().to_owned();
 
         Ok(MeshLoader { data, path })
     }
