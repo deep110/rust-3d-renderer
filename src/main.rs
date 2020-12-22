@@ -11,6 +11,7 @@ use toy_renderer::Config;
 // global variables
 const WIDTH: u32 = 512;
 const HEIGHT: u32 = 512;
+const WHITE: [u8; 4] = [255, 255, 255, 255];
 const LIGHT_DIR: Vector3<f32> = Vector3::new(0., 0., 1.);
 
 fn main() {
@@ -45,6 +46,7 @@ fn main() {
         mesh_path: file_path,
         is_wireframe: true,
         light_direction: LIGHT_DIR,
+        default_color: WHITE,
     };
 
     let mut rcontext = toy_renderer::init(config);

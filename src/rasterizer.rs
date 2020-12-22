@@ -1,13 +1,11 @@
-use crate::utils;
 use crate::mesh::SimplePolygon;
+use crate::utils;
+use crate::Config;
 use cgmath::prelude::*;
 use cgmath::{Vector2, Vector3};
 
 #[allow(unused_imports)]
 use test::Bencher;
-
-const _WIDTH_F: f32 = (crate::WIDTH - 1) as f32;
-const _HEIGHT_F: f32 = (crate::HEIGHT - 1) as f32;
 
 /// Barycentric coordinates of a point are represented from points of triangle
 /// itself For example: Given triangle with A, B, C, we can have a point P in
@@ -53,10 +51,17 @@ fn barycentric_coordinates(vertices: &[Vector3<f32>], point: &Vector3<f32>) -> V
     );
 }
 
-fn render_triangle(vertices: &[Vector3<f32>], frame: &mut [u8], zbuffer: &mut [f32], color: &[u8]) {
+fn render_triangle(
+    vertices: &[Vector3<f32>],
+    frame: &mut [u8],
+    zbuffer: &mut [f32],
+    color: &[u8],
+    width: f32,
+    height: f32,
+) {
     let mut bboxmin: Vector2<f32> = Vector2::new(f32::MAX, f32::MAX);
     let mut bboxmax: Vector2<f32> = Vector2::new(f32::MIN, f32::MIN);
-    let clamp: Vector2<f32> = Vector2::new(_WIDTH_F, _HEIGHT_F);
+    let clamp: Vector2<f32> = Vector2::new(width, height);
     for i in 0..3 {
         for j in 0..2 {
             bboxmin[j] = f32::max(0., f32::min(bboxmin[j], vertices[i][j]));
@@ -78,9 +83,16 @@ fn render_triangle(vertices: &[Vector3<f32>], frame: &mut [u8], zbuffer: &mut [f
             for i in 0..2 {
                 point.z += vertices[i][2] * bc_screen[i]
             }
-            let q = i as usize + (j * _WIDTH_F as i32) as usize;
+            let q = i as usize + (j * width as i32) as usize;
             if zbuffer[q] < point.z {
-                utils::set_pixel(i as usize, j as usize, frame, color);
+                utils::set_pixel(
+                    i as usize,
+                    j as usize,
+                    frame,
+                    color,
+                    width as usize,
+                    height as usize,
+                );
                 zbuffer[q] = point.z;
             }
         }
@@ -89,8 +101,11 @@ fn render_triangle(vertices: &[Vector3<f32>], frame: &mut [u8], zbuffer: &mut [f
 
 #[bench]
 fn bench_render_triangle(b: &mut Bencher) {
-    let mut frame = [0u8; crate::WIDTH as usize * crate::HEIGHT as usize * 4];
-    let mut zbuffer = [0f32; crate::WIDTH as usize * crate::HEIGHT as usize];
+    const HEIGHT: usize = 512;
+    const WIDTH: usize = 512;
+
+    let mut frame = [0; WIDTH * HEIGHT * 4];
+    let mut zbuffer = [0f32; WIDTH * HEIGHT];
     let red = [255, 0, 0, 255];
 
     let pts = [
@@ -99,13 +114,22 @@ fn bench_render_triangle(b: &mut Bencher) {
         Vector3::new(25., 25., 0.),
     ];
 
-    b.iter(|| render_triangle(&pts, &mut frame, &mut zbuffer, &red));
+    b.iter(|| {
+        render_triangle(
+            &pts,
+            &mut frame,
+            &mut zbuffer,
+            &red,
+            WIDTH as f32,
+            HEIGHT as f32,
+        )
+    });
 }
 
-fn world_to_screen(world_c: &Vector3<f32>) -> Vector3<f32> {
+fn world_to_screen(world_c: &Vector3<f32>, width: f32, height: f32) -> Vector3<f32> {
     Vector3::new(
-        (world_c.x + 1.) * _WIDTH_F / 2.,
-        (world_c.y + 1.) * _HEIGHT_F / 2.,
+        (world_c.x + 1.) * width / 2.,
+        (world_c.y + 1.) * height / 2.,
         world_c.z,
     )
 }
@@ -115,8 +139,11 @@ pub fn rasterize_mesh(
     faces: &Vec<SimplePolygon>,
     frame: &mut [u8],
     zbuffer: &mut [f32],
-    light_dir: Vector3<f32>,
+    config: &Config,
 ) {
+    let width_f32: f32 = (config.width - 1) as f32;
+    let height_f32: f32 = (config.height - 1) as f32;
+
     // each face is a triangle
     for face in faces {
         let mut world_coordinates: Vec<Vector3<f32>> = Vec::with_capacity(3);
@@ -125,7 +152,7 @@ pub fn rasterize_mesh(
         for i in 0..3 {
             // world coordinate of triangle vertex
             let tr_wc = vertices[face[i].0];
-            screen_coordinates.push(world_to_screen(&tr_wc));
+            screen_coordinates.push(world_to_screen(&tr_wc, width_f32, height_f32));
             world_coordinates.push(tr_wc);
         }
         // get normal vector to triangle and take dot product with light direction
@@ -137,13 +164,15 @@ pub fn rasterize_mesh(
         normal = normal.normalize();
 
         // use intensity as it is. Ignoring gamma correction
-        let intensity = (normal.dot(light_dir) * 255.) as u8;
+        let intensity = (normal.dot(config.light_direction) * 255.) as u8;
         if intensity > 0 {
             render_triangle(
                 &screen_coordinates,
                 frame,
                 zbuffer,
                 &[intensity, intensity, intensity, 255],
+                width_f32,
+                height_f32,
             );
         }
     }
