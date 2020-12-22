@@ -1,16 +1,14 @@
 #![feature(test)]
 extern crate test;
 
-mod rasterizer;
+mod mesh;
 mod utils;
-
-pub mod wavefront;
-pub mod wireframe;
+mod wireframe;
 
 use cgmath::Vector3;
+use mesh::MeshLoader;
 use pixels::{wgpu::Surface, Pixels, SurfaceTexture};
 use std::env;
-use wavefront::Obj;
 use winit::dpi::LogicalSize;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
@@ -20,6 +18,7 @@ use winit::window::WindowBuilder;
 const WIDTH: u32 = 512;
 const HEIGHT: u32 = 512;
 const BLACK: [u8; 4] = [0, 0, 0, 255];
+const WHITE: [u8; 4] = [255, 255, 255, 255];
 const LIGHT_DIR: Vector3<f32> = Vector3::new(0., 0., 1.);
 
 fn main() {
@@ -93,22 +92,23 @@ fn main() {
     });
 }
 
-fn init(obj_path: &str) -> wavefront::ObjData {
-    let mut mesh = Obj::load(obj_path).unwrap().data;
+fn init(obj_path: &str) -> mesh::MeshData {
+    let mut mesh = MeshLoader::load(obj_path).unwrap().data;
     mesh.normalize_vertices();
 
     return mesh;
 }
 
 // right now scene is just one obj mesh
-fn rasterize_scene(mesh: &wavefront::ObjData, frame_buffer: &mut [u8], zbuffer: &mut [f32]) {
+fn rasterize_scene(mesh: &mesh::MeshData, frame_buffer: &mut [u8], zbuffer: &mut [f32]) {
     // clear z buffer
     for i in 0..(WIDTH * HEIGHT) as usize {
         zbuffer[i] = f32::MIN;
     }
     for obj in &mesh.objects {
         for g in obj.groups.iter() {
-            rasterizer::rasterize_mesh(&mesh.position, &g.polys, frame_buffer, zbuffer);
+            // rasterizer::rasterize_mesh(&mesh.position, &g.polys, frame_buffer, zbuffer);
+            wireframe::draw_object_wireframe(&mesh.position, &g.polys, frame_buffer, &WHITE);
         }
     }
 }

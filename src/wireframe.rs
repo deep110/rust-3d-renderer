@@ -1,4 +1,4 @@
-use crate::wavefront::SimplePolygon;
+use crate::mesh::SimplePolygon;
 use cgmath::Vector3;
 
 use crate::utils;

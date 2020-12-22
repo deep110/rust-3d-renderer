@@ -1,5 +1,5 @@
 use crate::utils;
-use crate::wavefront::SimplePolygon;
+use crate::mesh::SimplePolygon;
 use cgmath::prelude::*;
 use cgmath::{Vector2, Vector3};
 
@@ -17,7 +17,7 @@ const _HEIGHT_F: f32 = (crate::HEIGHT - 1) as f32;
 ///
 /// P = A + u * AB + v * AC
 ///
-/// So to find barycentric cooridinates we just need to solve above equation for
+/// So to find barycentric coordinates we just need to solve above equation for
 /// u & v.
 ///
 /// u ABx + v ACx + PAx = 0
@@ -55,7 +55,7 @@ fn barycentric_coordinates(vertices: &[Vector3<f32>], point: &Vector3<f32>) -> V
 
 fn render_triangle(vertices: &[Vector3<f32>], frame: &mut [u8], zbuffer: &mut [f32], color: &[u8]) {
     let mut bboxmin: Vector2<f32> = Vector2::new(f32::MAX, f32::MAX);
-    let mut bboxmax: Vector2<f32> = Vector2::new(0., 0.);
+    let mut bboxmax: Vector2<f32> = Vector2::new(f32::MIN, f32::MIN);
     let clamp: Vector2<f32> = Vector2::new(_WIDTH_F, _HEIGHT_F);
     for i in 0..3 {
         for j in 0..2 {
@@ -72,6 +72,7 @@ fn render_triangle(vertices: &[Vector3<f32>], frame: &mut [u8], zbuffer: &mut [f
             if bc_screen.x < 0. || bc_screen.y < 0. || bc_screen.z < 0. {
                 continue;
             };
+            point.z = 0.;
 
             // check with z buffer & then draw
             for i in 0..2 {
@@ -87,7 +88,7 @@ fn render_triangle(vertices: &[Vector3<f32>], frame: &mut [u8], zbuffer: &mut [f
 }
 
 #[bench]
-fn bench_render_traingle(b: &mut Bencher) {
+fn bench_render_triangle(b: &mut Bencher) {
     let mut frame = [0u8; crate::WIDTH as usize * crate::HEIGHT as usize * 4];
     let mut zbuffer = [0f32; crate::WIDTH as usize * crate::HEIGHT as usize];
     let red = [255, 0, 0, 255];
@@ -136,13 +137,19 @@ pub fn rasterize_mesh(
 
         // use intensity as it is. Ignoring gamma correction
         let intensity = (normal.dot(crate::LIGHT_DIR) * 255.) as u8;
-        if intensity > 0 {
-            render_triangle(
-                &screen_coordinates,
-                frame,
-                zbuffer,
-                &[intensity, intensity, intensity, 255],
-            );
-        }
+        // if intensity > 0 {
+        //     render_triangle(
+        //         &screen_coordinates,
+        //         frame,
+        //         zbuffer,
+        //         &[intensity, intensity, intensity, 255],
+        //     );
+        // }
+        render_triangle(
+            &screen_coordinates,
+            frame,
+            zbuffer,
+            &[intensity, intensity, intensity, 255],
+        );
     }
 }
