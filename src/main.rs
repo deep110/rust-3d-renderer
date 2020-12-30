@@ -29,6 +29,7 @@ fn main() {
             .with_title("Toy Renderer")
             .with_inner_size(size)
             .with_resizable(false)
+            .with_always_on_top(true)
             .build(&event_loop)
             .unwrap()
     };
@@ -44,7 +45,7 @@ fn main() {
         width: WIDTH,
         height: HEIGHT,
         mesh_path: file_path,
-        is_wireframe: true,
+        is_wireframe: false,
         light_direction: LIGHT_DIR,
         default_color: WHITE,
     };

@@ -157,11 +157,10 @@ pub fn rasterize_mesh(
         }
         // get normal vector to triangle and take dot product with light direction
         // to get intensity.
-        let mut normal = Vector3::cross(
+        let normal = Vector3::cross(
             world_coordinates[1] - world_coordinates[0],
             world_coordinates[2] - world_coordinates[0],
-        );
-        normal = normal.normalize();
+        ).normalize();
 
         // use intensity as it is. Ignoring gamma correction
         let intensity = (normal.dot(config.light_direction) * 255.) as u8;

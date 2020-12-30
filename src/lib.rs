@@ -11,9 +11,8 @@
 extern crate test;
 
 mod mesh;
-mod rasterizer;
+mod renderer;
 mod utils;
-mod wireframe;
 
 use cgmath::Vector3;
 use mesh::{MeshData, MeshLoader};
@@ -48,31 +47,17 @@ pub fn init<'a, 'b: 'a>(config: Config<'b>) -> RendererContext<'a> {
 }
 
 pub fn render_scene(rcontext: &mut RendererContext, frame_buffer: &mut [u8]) {
-    let zbuffer = &mut rcontext.zbuffer[..];
     let mesh = &rcontext.mesh;
     let config = rcontext.config;
+    let zbuffer = &mut rcontext.zbuffer[..];
 
     // clear the frame buffer
     utils::clear(frame_buffer, &BLACK);
 
-    for obj in &mesh.objects {
-        for g in obj.groups.iter() {
-            if config.is_wireframe {
-                // show wireframe
-                wireframe::draw_object_wireframe(&mesh.position, &g.polys, frame_buffer, &config);
-            } else {
-                // clear z buffer
-                for i in 0..(config.width * config.height) as usize {
-                    zbuffer[i] = f32::MIN;
-                }
-                rasterizer::rasterize_mesh(
-                    &mesh.position,
-                    &g.polys,
-                    frame_buffer,
-                    zbuffer,
-                    &config,
-                );
-            }
-        }
+    // clear z buffer
+    for i in 0..(config.width * config.height) as usize {
+        zbuffer[i] = f32::MIN;
     }
+
+    renderer::render_object(mesh, &config, frame_buffer, zbuffer);
 }

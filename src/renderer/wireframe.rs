@@ -7,7 +7,7 @@ use crate::Config;
 #[allow(unused_imports)]
 use test::Bencher;
 
-pub fn draw_object_wireframe(
+pub fn draw_mesh_wireframe(
     vertices: &Vec<Vector3<f32>>,
     faces: &Vec<SimplePolygon>,
     frame: &mut [u8],
